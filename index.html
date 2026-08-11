@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+ * Impossible Mission. Commodore 64 remake in javaScript.
+ * by Krisztian Toth (http://krissz.hu/)
+-->
+	<meta charset="UTF-8">
+	<meta name="description" content="Impossible Mission. Commodore 64 remake in javaScript.">
+	<meta name="keywords" content="Impossible Mission, Commodore 64, remake, game, javascript">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0">
+    <style>
+    html, body, div, span, applet, object, iframe,
+   h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+   a, abbr, acronym, address, big, cite, code,
+   del, dfn, em, img, ins, kbd, q, s, samp,
+   small, strike, strong, sub, sup, tt, var,
+   b, u, i, center,
+   dl, dt, dd, ol, ul, li,
+   fieldset, form, label, legend,
+   table, caption, tbody, tfoot, thead, tr, th, td,
+   article, aside, canvas, details, embed, 
+   figure, figcaption, footer, header, hgroup, 
+   menu, nav, output, ruby, section, summary,
+   time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* Used font */
+@font-face {
+	font-family: 'C64ProMonoRegular';
+	src: url('fonts/c64_pro_mono_v1.0-style-webfont.eot');
+	src: url('fonts/c64_pro_mono_v1.0-style-webfont.eot?#iefix') format('embedded-opentype'),
+		url('fonts/c64_pro_mono_v1.0-style-webfont.woff') format('woff'),
+		url('fonts/c64_pro_mono_v1.0-style-webfont.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+html {
+	height: 100%;
+	overflow: hidden;
+	background: black;
+}
+body {
+	position: relative;
+	height: 100%;
+	font-family: 'C64ProMonoRegular';
+	font-size: 8px;
+	line-height: 1;
+	color: white;
+	background: black;
+}
+#body {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	background: black;
+	z-index: 50;
+}
+#loading {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -140px;
+	margin-left: -300px;
+	padding-top: 140px;
+	padding-left: 256px;
+	width: 342px;
+	height: 134px;
+	font-family: 'C64ProMonoRegular';
+	font-size: 16px;
+	letter-spacing: -1px;
+	text-align: center;
+	background: url(images/v1.0/droidMessage.png) no-repeat;
+}
+#loading p {
+	margin: 0px;
+	padding: 0px;
+	width: 295px;
+	color: white;
+	line-height: 28px;
+	text-transform: uppercase;
+	text-align: center;
+	overflow: hidden;
+}
+#screen {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	margin-left: -160px;
+	margin-top: -100px;
+	width: 320px;
+	height: 200px;
+	font-size: 18px;
+	z-index: 100;
+	image-rendering: crisp-edges;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -o-crisp-edges;
+	image-rendering: -webkit-optimize-contrast;
+	-ms-interpolation-mode: nearest-neighbor;
+	image-rendering: -webkit-crisp-edges; 
+	-webkit-interpolation-mode: nearest-neighbor;
+}
+#menu {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 22px;
+	background: #ddd;
+	color: #474747;
+	line-height: 21px;
+	letter-spacing: -1px;
+	z-index: 200;
+	text-transform: uppercase;
+	overflow: hidden;
+}
+#menu .panel {
+	display: inline-block;
+	float: left;
+	border-right: 1px solid #888;
+	padding: 1px 8px 0px 8px;
+}
+#menu .panel.external-link {
+	padding: 1px 4px 0px 3px;
+	background: #ccc;
+}
+#menu .panel .button {
+	display: inline-block;
+	cursor: pointer;
+}
+#menu .panel .button.active {
+	text-decoration: underline;
+}
+#menu .panel .button > img,
+#menu .panel > img {
+	vertical-align: -6px;
+}
+#menu .panel.button-donate {
+	padding-right: 5px;
+	height: 22px;
+	overflow: hidden;
+}
+#menu .panel.button-donate form {
+	width: 80px;
+	height: 22px;
+	overflow: hidden;
+}
+#menu .panel.button-share {
+	float: right;
+	border: none;
+}
+#menu .twitter-share-button {
+	margin-left: -30px;
+	margin-right: -20px;
+}
+
+#overlay {
+	position: fixed;
+	z-index: 1000;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	background: black;
+	opacity: 0.5;
+}
+
+.dialog {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 1100;
+	margin-top: -25%;
+
+	margin-left: -320px;
+	border: 12px solid black;
+	width: 640px;
+	height: 50%;
+	background: #666;
+	overflow: hidden;
+	overflow-y: scroll;
+}
+.dialog .content {
+	padding: 10px 30px;
+	font-family: 'Tahoma';
+	line-height: 18px;
+	font-size: 13px;
+	color: #eee;
+}
+.dialog p {
+	margin: 12px 0px;
+}
+.dialog h2 {
+	margin: 20px 0px;
+	font-family: 'C64ProMonoRegular';
+	font-size: 16px;
+	color: #fe0;
+	text-align: center;
+}
+.dialog h3 {
+	font-family: 'C64ProMonoRegular';
+	font-size: 12px;
+	margin: 16px 0px 12px 0px;
+	color: #dc8;
+	text-align: center;
+}
+.dialog ul {
+	margin-left: 20px;
+}
+.dialog ul li {
+	margin-top: 8px;
+	margin-left: 10px;
+	list-style-type: disc;
+}
+.dialog p.img {
+	text-align: center;
+}
+.dialog em {
+	font-style: italic;
+}
+.dialog p a {
+	color: #fe0;
+	text-decoration: underline;
+}
+.dialog#upgradeBrowser {
+	height: 150px;
+}
+
+.hide {
+	display: none;
+}
+
+::-webkit-scrollbar {
+	width: 12px;
+	background-color: black;
+}
+::-webkit-scrollbar-thumb {
+	background-color: #ddd;
+}
+
+/* selection color */
+	</style>
+	<link rel="shortcut icon" href="images/v1.0/favicon.ico">
+	<title>Impossible Mission. Commodore 64 remake in javaScript/html5.</title>
+</head>
+<body>
+
+<div id="body">
+	<div id="loading">
+		<p>
+			Loading resources<br>
+			(<span id="loaded-resources">0</span>/<span id="needed-resources">43</span>)
+		</p>
+	</div>
+
+	<div id="gameScreen" class="hide">
+		<canvas id="screen" width="960" height="600"></canvas>
+	</div>
+
+	<div id="menu" class="hide">
+		<div class="panel external-link">
+			<!--<span class="button">
+				<a href="#" target="c64">
+					<img src="images/v1.0/commodoreIcon.png" alt="c64 icon" title="my C64 retro page" width="18" height="18">
+				</a>
+			</span>
+		</div>
+		<div class="panel external-link">
+			<span class="button">
+				<a href="#" target="boulderdash">
+					<img src="images/v1.0/boulderDashIcon.png" alt="Boulder Dash icon" title="play Boulder Dash!" width="16" height="17">
+				</a>
+			</span>
+		</div>
+		<div class="panel external-link">
+			<span class="button">
+				<a href="#" target="wizardofwor">
+					<img src="images/v1.0/wizardOfWorIcon.png" alt="Wizard Of Wor icon" title="play Wizard Of Wor!" width="18" height="18">
+				</a>
+			</span>
+		</div>
+		<div class="panel external-link">
+			<span class="button">
+				<a href="#" target="tetris">
+					<img src="images/v1.0/tetrisIcon.png" alt="Tetris icon" title="play Tetris!" width="18" height="18">
+				</a>
+			</span>-->
+		</div>
+		<div class="panel">
+			<span class="button button-manual">Manual</span>
+		</div>
+		<div class="panel">
+			<img src="images/v1.0/paletteIcon.png" alt="Color scheme" title="Color scheme" width="18" height="18">
+			<span class="button button-palette active" data-palette="vice">VICE</span>
+			<span class="button button-palette" data-palette="c64s">C64S</span>
+			<span class="button button-palette" data-palette="c64hq">C64HQ</span>
+			<span class="button button-palette" data-palette="ccs64">CCS64</span>
+			<!--<span class="button button-palette-pc64" data-palette="pc64">PC64</span>-->
+		</div>
+		<div class="panel">
+			<span class="button button-fullscreen" onclick="engine.setFullscreen()">
+				<img src="images/v1.0/fullscreenIcon.png" alt="full screen icon" title="switch to full screen" width="18" height="18">
+			</span>
+		</div>
+		<div class="panel">
+			<img src="images/v1.0/soundIcon.png" alt="Sound" title="Sound" width="18" height="18">
+			<span class="button button-sound-on active">on</span>
+			<span class="button button-sound-off">off</span>
+		</div>
+<!--		<div class="panel button-donate">
+			<form action="#" method="post" target="_top">
+				<input type="hidden" name="cmd" value="_s-xclick">
+				<input type="hidden" name="hosted_button_id" value="#">
+				<input type="image" src="images/v1.0/donateButton.png" border="0" name="submit" alt="">
+				<img alt="" border="0" src="#" width="1" height="1">
+			</form>
+		</div>-->
+		<div class="panel button-share">
+			<span class="button">
+			</span>
+		</div>
+	</div>
+
+	<div id="overlay" class="hide"></div>
+
+	<div id="manual" class="dialog hide">
+
+		<div class="content">
+
+			<h2>MANUAL</h2>
+
+			<p>
+				1. SUBJECT: Mission of vital importance to national and global security. Operations to begin immeadiatley. Utmost urgency.
+			</p>
+			<p>
+				2. SITUATION: During the past three days, key military computer installations of every major world power have reported security failures. In each case, someone gained access to a primary missile attack computer.
+			</p>
+			<p>
+				Only one person is capable of computer tampering on this scale ... Professor Elvin Atombender (hereafter referred to as &quot;Elvin&quot;)
+			</p>
+			<p>
+				We believe that elvin is working to break the computer&#39;s launch codes. When he succeeds, he plans to trigger a missle attack that will destroy the world.
+			</p>
+			<p>
+				3. MISSION: You must penetrate elvin&#39;s underground stonghold and stop him. To succeed you will have evade the scientist&#39;s robot guards, break his security code and find his control center. Your predecessors, agents 4116 and 4124 (may they rest in peace), were able to send back some information about elvin&#39;s installation. It is detailed in the following pages.
+			</p>
+			<p>
+				Your only weapons will be your keen analytical mind and your M1A9366b pocket computer. Good luck. The world is depending on you.
+			</p>
+
+			<h2>ELVIN&#39;S STRONGHOLD</h2>
+
+			<p>
+				Using a forutne he amassed by raiding the computer systems of various financial institutions, elvin constructed a vast, underground stonghold packed with computer equipment. There, in seclusion, elvin spent four years working to breach the security of military computer installations around the world. As you know, he has succeeded.
+			</p>
+			<p>
+				Our computer estimate that he will break the launch codes and trigger the misslee attack in exactly six hours. This is the amount of time you will have to complete your mission.
+			</p>
+			<p>
+				Elvin&#39;s stronghold consists of 32 rooms in which each room can be accessed by an elevator or through lifts in each room.
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/elevatorSystem.png" width="324" height="205">
+			</p>
+
+			<h2>ELVIN&#39;S SECURITY SYSTEM</h2>
+
+			<p>
+				Our intellegence indicates that elvin uses three types of codes (or passwords) in his security sustem. One code deactivates the robots, another operates the lifts and the third code (a password) unlocks the control room.
+			</p>
+			<p>
+				Now comes the really strange part:<br>
+				<em>we believe that elvin hides the passwords in his furniture</em>
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/furnitures.png" width="241" height="34">
+			</p>
+
+			<p>
+				Elvin, who is extremely absent-minded, frequently forgets the passwords for his security computer. His solution is to scatter them haphazardly around the house
+			</p>
+			<p>
+				Whine, but you must find them. Without the passwords, you will almost certainly end up like agent 4124 (but we don&#39;t want to think about that, do we?)
+			</p>
+			<p>
+				Once you find the codes, using them should be relatively easy (for the most part). You should be able to log onto a security terminal as you enter each room and deactivate the robots or reset the lifts (if neccessary) from there.
+			</p>
+			<p>
+				Note: <em>You can deactive or reset lifts depending upon how many &quot;init lift&quot; passwords you have or find. This should present no problems.</em>
+			</p>
+			<p>
+				Note: <em>You can deactivate the robots with a &quot;snooze&quot; password (temporarily) in that room.. When you find one it shows the picture of a robot with a series of zzzzzz&#39;s...or you can check your status while standing in the elvator and pressing button 0 or 1.</em>
+			</p>
+			<p>
+				Extreme Note! : <em>However, the control room password is another matter. Realizing the importance of this perticular code, elvin has broken it into dozens of pieces, scattering them throughout the complex. You will have to find and retrieve all of the pieces and match them up like a puzzle to form a password. (objective of game)</em>
+			</p>
+			<p>
+				With the compelted password, you can gain access to the control room where elvin is preparing to launch the missiles. You have to stop him, or the world is going to be terminally late for dinner tonight. (all gone)
+			</p>
+
+			<h2>OVERVIEW OF OBJECTIVE</h2>
+
+			<p>
+				Idea is to run about room avoiding robots and holes (on bottom floor) and try to find the pieces of the puzzle to solve.
+			</p>
+
+			<h2>CONTROLS</h2>
+
+			<p>
+				In the elevator: push the joystick forward or back to go up or down. push the joystick left or right to move in either direction along the corridor. running to the edge of the screen takes you into a room. (this is the place where you start in the begginig) also-&gt; this is where you use your buttons to view your status or use equipment which will be explained later on.
+			</p>
+			<p>
+				In the rooms: push the joystick left or right to move in either direction. if you press the fire button, your agent will perform a mid-air foward flip that you won&#39;t believe (this is especially useful for somersaulting over pesky robots and gaps in the floor. )
+			</p>
+			<p>
+				On lifting platforms: if you&#39;re standing on a striped lifeting platoform (b&amp;w 1 inch block) in one of the rooms, you can push the joystick forward or bacward to go up or down (to it&#39;s limits of course)
+			</p>
+
+			<h2>GAME PLAY</h2>
+
+			<p>
+				As you explore Elvin&#39;s stronghold, your pocket computer (at the bottom of the elevator screen) will display a map of the rooms and tunnels you have entered. In every room, you should conduct a search.
+			</p>
+
+			<h2>SEARCHING FOR CODES</h2>
+
+			<p>
+				Search every object or peice of furniture in the rooms for codes and password puzzle pieces (if you can avoid the robots). You can do this by standing directly in front of an object (sofa, desk, fireplace or whatever) and pushing the joystick forward.
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/puzzleFound.png" width="96" height="50">
+			</p>
+
+			<p>
+				The word &quot;searching&quot; will appear in a box at the top of the screen. You will also see a horizontal bar indicating the length of time it will take to search the object. You must continue holding the joystick forward intil the bar disappears
+			</p>
+			<p>
+				Resume searching where you left off. But if you leave the room, you&#39;ll have to start the search from the beggining.
+			</p>
+			<p>
+				When you have finished searching the object, one of four things will replace the words &quot;searching&quot; at the top of the screen:
+			</p>
+			<p>
+				The words &quot;nothing here.&quot; (then the object disappears)
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/liftInit.png" width="64" height="32">
+			</p>
+
+			<p>
+				A picture of a striped lifting platoform with an arrow above it. This represents a lift init password which alows you to reset all of the lifting platforms to their original positions (not elevators)
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/snooze.png" width="70" height="38">
+			</p>
+
+			<p>
+				A picture of a sleeping robot. This represents a snooze password which allows you to temporarily deactivate the robots in a room.
+			</p>
+			<p>
+				A puzzle piece. This is part of the password which allows entry to the control room. It will be entered into the memory of your pocket computer automatically
+			</p>
+
+			<h2>USING SECURITY TERMINALS</h2>
+
+			<p class="img">
+				<img src="images/v1.0/manual/terminal.png" width="33" height="29">
+			</p>
+
+			<p>
+				Use can use the <em>snoozes</em> and <em>lift inits</em> at any security terminal. These terminals are usually located near the entrance to each room. They look like television sets with darkened screens facing toward you. (actually it look like facing an apple w/a monitor which is off (it&#39;s on a stand)
+			</p>
+			<p>
+				To use a security terminal, move directly in front of it and push the joystick forward. The screen of the security terminal will enlarge to fill your display. You can select one of three functions with the joystick (press button when the arrow points to the function you want):
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/terminalScreen.png" width="320" height="200">
+			</p>
+
+			<p>
+				Reset lifting platforms. To use this option, you must have a lift init password in your possession. (your pocket computer displays the number of &#39;lift inits&#39; you have.)
+			</p>
+			<p>
+				Temporarily disable robots. To use this option, you must have &quot;snooze&quot; password in your possession. (your pocket computer displays the number of &#39;snoozes&quot; you have.)
+			</p>
+			<p>
+				Log off.
+			</p>
+
+			<h2>CODE ROOMS</h2>
+
+			<p class="img">
+				<img src="images/v1.0/manual/organRoom.png" width="324" height="204">
+			</p>
+
+			<p>
+				Elvin&#39;s stronghold contains two code rooms where you can earn additional passwords. Walk up to the console and push the joystick forward as if you were searching it. A sequence of squares will flash on the wall, each with a musical note, and a white golve will appear. Use the glove to touch each square in a sequence so that the notes are sorted in ascending order (from low to high)
+			</p>
+			<p>
+				If you produce the proper sequence of notes, the checkerboard will flash and you will get a <em>snooze</em> or <em>lift init</em> password. You can do this as many times as you like, but the sequence gets longer each time. You can quit at any time by touching the purple bar at the bottom of the checkerboard.
+			</p>
+
+			<h2>POCKET COMPUTER</h2>
+
+			<p>
+				Your pocket computer is an amazing device. It allows you to play with the puzzle pieces right on the screen, twisting them around to figure out how they go together.
+			</p>
+			<p>
+				To activate your pocket computer, you must be &quot;standing&quot; in one of the &quot;elevators&quot; or corridors. Press the button to turn on the pocket computer. Note: <em>You can&#39;t use the pocket computer in any of the rooms. Pressing the fire button in a room will cause you to do a somersault.</em>
+			</p>
+			<p>
+				When the computer is activated, the map of elvin&#39;s stonghold will vanish and a white glove will appear. Use the glove to put the puzzle pieces together, to form the password which will let you enter elvin&#39;s control room.
+			</p>
+
+			<h3>USING THE POCKET COMPUTER COMMANDS</h3>
+
+			<p class="img">
+				<img src="images/v1.0/manual/pocketComputer.png" width="320" height="79">
+			</p>
+
+			<ul>
+				<li><em>arrow keys</em> - (upper left corner) - moves other pieces that were found into memory window</li>
+				<li><em>phone key</em> - (bottom left corner) - dials out for help (see using the phone)</li>
+				<li><em>password</em> - (mid lowest left) - the computer assembles elvin&#39;s control password here</li>
+				<li><em>memory window</em> - (mid upper left) - displays to pieces of the puzzle your working with - (arrow command moves up a piece or down a piece to add to the puzzle)</li>
+				<li><em>snooze &amp; init passwords</em> - just tells how many of each you have found if any</li>
+				<li><em>selected puzzle piece(s)</em> - (mid right of center box)- the only way the piece gets here is when you move it from the memory window to assemble it.</li>
+				<li><em>off key</em> - turns off the pocket computer</li>
+				<li><em>game clock</em> - shows time left to play. (game ends at 6:00:00)</li>
+				<li><em>vertical flip key</em> - (first top command on the 8 keys together (from left to right)) -flops the selected puzzle piece vertically</li>
+				<li><em>horizontal flip key</em> - (to right of vertical) -flops the selected puzzle piece horizontally.</li>
+				<li><em>trash can key</em> - (right of horizontal key) deletes the selected puzzle piece from the display (not memory)</li>
+				<li><em>exclamation key</em> - (right of &quot;off&quot; key) - if you just deleted a puzzle piece or put two pieces together, you can use this to &quot;undo&quot; it.</li>
+				<li><em>color keys</em> - (to right of exclamation key) - changes the colr of the selected puzzle piece.</li>
+				<li><em>paws key</em> - (botom right corner) (two of them) pauses the game.</li>
+			</ul>
+
+			<h3>USING THE GLOVE</h3>
+
+			<ul>
+				<li>to move the glove, move the joystick in the desired direction.</li>
+				<li>to activate a function key, &quot;point&quot; to it with the glove and press the joystick button.</li>
+				<li>to pick up a puzzle piece in the memory window, &quot;point&quot; to it with the glove and press the joystivk button. then you can move it by moving the joystick button.</li>
+				<li>to drop a puzzle piece, press the joystick button.</li>
+				<li>to make a copy of the selected piece, &quot;point&quot; to it with the glove and press the joystick button.</li>
+				<li>to put back a copy - of the selected piece, position the copy directly over the selected piece and press the joystick button.</li>
+				<li>to select a puzzle piece - that isn&#39;t selected, &quot;point&quot; to it with the glove and press the joystick button.</li>
+				<li>to find out if two pieces match, position one piece directly over the other and press the joystick button.</li>
+			</ul>
+
+			<h3>SOLVING THE PUZZLES</h3>
+
+			<ul>
+				<li>some pieces are upside down or backwards (or both) when you find them, so if a piece doesn&#39;t seem to match anything, try flipping it with the function keys.</li>
+				<li>pieces must be the same color, or they won&#39;t match. if two pieces with different colors look like the should match, then use the color keys to change them.</li>
+				<li>a completed puzzle looks like a computer punch card: a solid rectangle with several little holes in it</li>
+				<li>a completed puzzle may be upside down or backwards when you finish putting it together (you may have to flip it around before it is recognized as a solution)</li>
+				<li>there are four pieces in each completed puzzle, and nine puzzles in the game, each time you complete a puzzle, one letter of elvin&#39;s password password will appear at the bottom of the pocket computer screen.</li>
+				<li>when you have all nine of the letters in the password, you can open the door to elvin&#39;s control center and save the world.</li>
+			</ul>
+
+			<h2>CONTROL ROOM</h2>
+
+			<p>
+				The door to elvin&#39;s control room is in one of the bedrooms. When you have completed the password, position your agent directly in front of the door and push the joystick forward. The door will open, and you&#39;ll finally have the last laugh.
+			</p>
+
+			<p class="img">
+				<img src="images/v1.0/manual/exitRoom.png" width="325" height="205">
+			</p>
+
+			<h2>USING THE PHONE</h2>
+
+			<p>
+				When you touch the phone key on your pocket computer, it dials up the agency&#39;s main computer (to get some help with the puzzles). But there is a charge for using it. Each use of the phone cost two minutes on the game clock.
+			</p>
+			<p>
+				The agency&#39;s computer will give you three choices. Select the one you want with the glove, and then press the joystick button.
+			</p>
+
+			<h3>CHOICES</h3>
+
+			<p class="img">
+				<img src="images/v1.0/manual/phone.png" width="195" height="78">
+			</p>
+
+			<p>
+				Correct orientations of leftmost pieces - the computer will flip the two puzzle pieces in the memory window to orient them correctly (right side up and forwards, instead of upside down and backwards). A read mark will appear to the left of each piece that has been flipped.
+			</p>
+			<p>
+				Have we enough pieces to solve the upper left puzzle? - the computer will look at the upper puzzle piece in the memory window and tell you whether you&#39;ve found all three of the pieces that go with it to make a completed puzzle.
+			</p>
+			<p>
+				Hang up - hangs up the phone.
+			</p>
+			<p>
+				Continuing playing - you can start a new game at any time by depressing the &#39;esc&#39; key. The rooms and robots will be re-arranged, and the computer will generate a new set of puzzles.
+			</p>
+
+			<h2>SCORING</h2>
+
+			<p>
+				The game clock (on the pocket computer display) starts at 12:00 the game end when the clock reaches 6:00.
+			</p>
+
+			<h3>LOSING TIME</h3>
+
+			<p>
+				Each time you fall of the bottom of the screen or get zapped by a robot or floating orb, you are penalized 10 minutes.
+			</p>
+			<p>
+				Each time you use the phone, you are penalized two minutes. When the game ends, you are awarded points as follows:
+			</p>
+			<p>
+				1 point for each second remaining on the clock 100 points for each puzzle piece found. 100 points for each snooze &amp; lift init password found. 500 points for each puzzle solved. 1000 points for completing the mission.
+			</p>
+
+			<h2>HINTS</h2>
+
+			<p>
+				<em>Here are some palying hints from the author of imposible mission:</em>
+			</p>
+			<p>
+				Some rooms are harder than others. If a room seems too hard (presumably because you don&#39;t have any passwords to reset the lifts and turn off the robots), come back to it afyer you&#39;ve aquired some passwords.
+			</p>
+			<p>
+				Each robot has a different behavior program. Some robots move faster than others, some of them shoot lighting bolts, and some have no sight or hearing. So watch them closely. You can often figure out what program a robot is running before you try to get past it.
+			</p>
+			<p>
+				Your pocket computer will let you combine any two pieces that don&#39;t overlap, but this isn&#39;t always enough. Puzzle pieces which don&#39;t overlap may not really belong together. If you find that it&#39;s impossible to ginish a pertially-completed puzzle, you may have combined the wrong puzzle pieces.
+			</p>
+			<p>
+				You don&#39;t have to somersault over every hole in the floor. If a gap is no wider than a lifting platform, try stepping across it. But don&#39;t let up on the joystick until you get to the other side, or you&#39;ll fall.
+			</p>
+			<p>
+				If you have to cross a very large chasm, you can actually have one foot in the abyss before you press the fire button to jump. If you do this just right, it will give you the extra distance you need.
+			</p>
+
+		</div>
+
+	</div>
+
+	<div id="upgradeBrowser" class="dialog hide">
+
+		<div class="content">
+
+			<h2>UNSUPPORTED BROWSER VERSION</h2>
+
+			<p>
+				The sound system based on Web Audio API. Your browser not supported this function yet. Please upgrade your browser to latest version of <a href="http://www.google.com/chrome/" target="chrome">Chrome</a> or <a href="http://nightly.mozilla.org/" target="firefox">FireFox 26+ (Nightly)</a> to hear the voices!
+			</p>
+
+		</div>
+
+	</div>
+
+</div>
+
+<script src="js/v1.0/jQuery.1.9.1.min.js"></script>
+<script src="js/v1.0a/constants.js"></script>
+<script src="js/v1.0/audio.js"></script>
+<script src="js/v1.0a/dork.js"></script>
+<script src="js/v1.0/elevator.js"></script>
+<script src="js/v1.0/pocketComputer.js"></script>
+<script src="js/v1.0/puzzles.js"></script>
+<script src="js/v1.0/rooms.js"></script>
+<script src="js/v1.0/furnitures.js"></script>
+<script src="js/v1.0/terminals.js"></script>
+<script src="js/v1.0/innerLifts.js"></script>
+<script src="js/v1.0/droids.js"></script>
+<script src="js/v1.0/blackBall.js"></script>
+<script src="js/v1.0/game.js"></script>
+<script src="js/v1.1a/engine.js"></script>
+</body>
+</html>
